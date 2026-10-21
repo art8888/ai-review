@@ -1,0 +1,46 @@
+stages:
+  - review
+  - audit
+
+ai-review:
+  stage: review
+  image: "$CI_REGISTRY_IMAGE"
+
+  tags:
+    - test
+
+  variables:
+    GIT_DEPTH: 0
+    OPENAI_API_KEY: $OPENAI_API_KEY
+
+  script:
+    - node js/review.js
+
+  allow_failure: false
+
+  rules:
+    - if: '$CI_MERGE_REQUEST_IID'
+
+ai-audit:
+  stage: audit
+  
+  image: "$CI_REGISTRY_IMAGE"
+  
+  tags:
+    - test
+  
+  variables:
+    OPENAI_API_KEY: $OPENAI_API_KEY
+  
+  script:
+    - node js/audit.js
+  
+  artifacts:
+    when: always
+    paths:
+      - audit-report.html
+  
+  when: manual
+
+  rules:
+    - when: manual
